@@ -20,8 +20,10 @@ function e($str)
  * @throws Exception
  */
 function getStringFromUrl($fileurl) {
+
     $temp_file_path = tempnam(sys_get_temp_dir(), 'qrcode');
     $tmpfile = null;
+
     $file = fopen($fileurl, 'rb');
     if ($file) {
         $tmpfile = fopen($temp_file_path, 'wb');
