@@ -5,3 +5,23 @@ body {
 footer {
   text-align: right;
 }
+
+form input {
+  margin: 10px 20px 30px;
+}
+form input[type='submit'] {
+  display: block;
+}
+
+.notice-title {
+  margin-top: 30px;
+  text-decoration: underline;
+}
+.result-title {
+  margin-top: 30px;
+  text-decoration: underline;
+}
+.result {
+  font-size: 2em;
+  font-weight: bold;
+}

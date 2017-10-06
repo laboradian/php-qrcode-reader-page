@@ -1,12 +1,67 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
 
+//ini_set('display_errors', '1');
+//ini_set('display_startup_errors', '1');
+//error_reporting(-1);
+
 //------------------------
 // ヘルパー関数
 //------------------------
 function e($str)
 {
     return htmlspecialchars($str, ENT_QUOTES);
+}
+
+/**
+ * アップロードされた画像ファイルのQRコードから値を取得して返す。
+ * @param  array $files $_FILESそのものが渡される
+ * @return string || false QRコードから取得した文字列（何も取得できない場合はfalseが返る）
+ * @throws Exception
+ */
+function getStringFromQRCode($files) {
+
+    $filepath = $files['userfile']['tmp_name'];
+
+    if (($files['userfile']['error']) !== 0) {
+        throw(new Exception('アップロードファイルのエラーです。(' . $files['userfile']['error'] . ')'));
+    }
+
+    // ファイルの存在チェック
+    if (!file_exists($filepath)) {
+        throw(new Exception('ファイルを取得することができませんでした。'));
+    }
+
+    // 画像ファイルであるかチェックする
+    if (\App\Utils::isValidImageFile($filepath) === false) {
+        throw(new Exception('不正なファイルです。'));
+    }
+
+    $qrcode = new \QrReader($filepath);
+    return $qrcode->text();
+}
+
+//-----------
+// 変数
+//-----------
+$text = ''; // QRコードから取得した文字列
+$error_messages = [];
+
+if (isset($_POST['MAX_FILE_SIZE'])) {
+
+    try {
+
+        $text = getStringFromQRCode($_FILES);
+        if ($text === '' || $text === false) {
+            $error_messages[] = '値が取得できませんでした。';
+        }
+
+    } catch (\Exception $e) {
+
+        $error_messages[] = $e->getMessage();
+
+    }
+
 }
 
 //--------------------------------
@@ -39,14 +94,50 @@ header("X-Frame-Options: DENY");
     <h1>QRコード リーダー</h1>
   </header>
 
-  <div class="well">
-    <p>QRコードから値を読み取ります。</p>
-  </div>
-
   <div class="panel panel-success">
-    <div class="panel-heading">テスト</div>
+    <div class="panel-heading">QRコードから値を読み取ります。</div>
     <div class="panel-body">
-        雛形プロジェクトです。
+
+        <!-- データのエンコード方式である enctype は、必ず以下のようにしなければなりません -->
+        <form enctype="multipart/form-data" method="POST">
+            <!-- MAX_FILE_SIZE は、必ず "file" input フィールドより前になければなりません -->
+            <input type="hidden" name="MAX_FILE_SIZE" value="300000" />
+            <p class="instruction">
+                (1) QRコードの画像ファイルを選択してください。
+            </p>
+            <!-- input 要素の name 属性の値が、$_FILES 配列のキーになります -->
+            <input name="userfile" type="file" />
+            <p class="instruction">
+                (2) 以下のボタンをクリックしてファイルを送信してください。
+            </p>
+            <input type="submit" value="ファイルを送信" />
+        </form>
+
+        <p class="notice-title">注意</p>
+        <ul>
+            <li>ファイルサイズは、300KB以内にしてください。</li>
+            <li>アップロードされたファイルは特に保存したりはしていません。</li>
+        </ul>
+
+        <?php if ($text !== '' && $text !== false): ?>
+        <p class="result-title">取得した文字列</p>
+        <section class="result">
+            <div class="alert alert-info" role="alert">
+                <?= e($text) ?>
+            </div>
+        </section>
+        <?php endif; ?>
+
+        <?php if (count($error_messages) > 0): ?>
+            <div class="alert alert-danger" role="alert">
+                <ul>
+                <?php foreach($error_messages as $msg): ?>
+                    <li><?= e($msg); ?></li>
+                <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
     </div>
   </div>
 
