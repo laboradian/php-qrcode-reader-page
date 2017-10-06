@@ -14,6 +14,42 @@ function e($str)
 }
 
 /**
+ * URLで指定された画像ファイルのQRコードから値を取得して返す。
+ * @param string $fileurl
+ * @return string || false QRコードから取得した文字列（何も取得できない場合はfalseが返る）
+ * @throws Exception
+ */
+function getStringFromUrl($fileurl) {
+    $temp_file_path = tempnam(sys_get_temp_dir(), 'qrcode');
+    $tmpfile = null;
+    $file = fopen($fileurl, 'rb');
+    if ($file) {
+        $tmpfile = fopen($temp_file_path, 'wb');
+        if ($tmpfile) {
+            while(!feof($file)) {
+                fwrite($tmpfile, fread($file, 1024 * 8), 1024 * 8);
+            }
+        }
+    }
+
+    // 画像ファイルであるかチェックする
+    if (\App\Utils::isValidImageFile($temp_file_path) === false) {
+        throw(new Exception('不正なファイルです。'));
+    }
+
+    $qrcode = new \QrReader($temp_file_path);
+
+    if ($file) {
+        fclose($file);
+    }
+    if ($tmpfile) {
+        fclose($tmpfile);
+    }
+
+    return $qrcode->text();
+}
+
+/**
  * アップロードされた画像ファイルのQRコードから値を取得して返す。
  * @param  array $files $_FILESそのものが渡される
  * @return string || false QRコードから取得した文字列（何も取得できない場合はfalseが返る）
@@ -45,13 +81,23 @@ function getStringFromQRCode($files) {
 // 変数
 //-----------
 $text = ''; // QRコードから取得した文字列
+$fileurl = '';
 $error_messages = [];
 
 if (isset($_POST['MAX_FILE_SIZE'])) {
+    //var_dump($_POST);
+    //var_dump($_FILES);
 
     try {
 
-        $text = getStringFromQRCode($_FILES);
+        // URL を使う場合
+        if ($_POST['fileurl'] !== '') {
+            $fileurl = $_POST['fileurl'];
+            $text = getStringFromUrl($fileurl);
+        // アップロードファイルを使う場合
+        } else {
+            $text = getStringFromQRCode($_FILES);
+        }
         if ($text === '' || $text === false) {
             $error_messages[] = '値が取得できませんでした。';
         }
@@ -107,6 +153,11 @@ header("X-Frame-Options: DENY");
             </p>
             <!-- input 要素の name 属性の値が、$_FILES 配列のキーになります -->
             <input name="userfile" type="file" />
+            <p class="fileurl-title">URLを使ってファイルを指定することもできます。
+                <input type="text" name="fileurl" style="width:300px"
+                       placeholder="例：http://example.com/image.png"
+                       value="<?php if ($fileurl !== '') echo e($fileurl); ?>"></p>
+
             <p class="instruction">
                 (2) 以下のボタンをクリックしてファイルを送信してください。
             </p>

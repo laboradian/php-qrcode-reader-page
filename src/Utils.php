@@ -39,4 +39,29 @@ class Utils {
         return false;
     }
 
+    /**
+     * URLからファイルを取得し、ローカルに保存する。
+     * @param string $url  取得するファイルを表すURL
+     * @param string $path 保存先のファイルパス
+     */
+    public static function downloadFile($url, $path)
+    {
+        $newfname = $path;
+        $file = fopen ($url, 'rb');
+        if ($file) {
+            $newf = fopen ($newfname, 'wb');
+            if ($newf) {
+                while(!feof($file)) {
+                    fwrite($newf, fread($file, 1024 * 8), 1024 * 8);
+                }
+            }
+        }
+        if ($file) {
+            fclose($file);
+        }
+        if ($newf) {
+            fclose($newf);
+        }
+    }
+
 }
