@@ -1,0 +1,15 @@
+{
+    "name": "yuki/php-qrcode-reader-page",
+    "authors": [
+        {
+            "name": "yukisov",
+            "email": "yukisov@gmail.com"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^2.4"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.2"
+    }
+}
