@@ -134,12 +134,12 @@ header("X-Frame-Options: DENY");
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
   <!--<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">-->
   <link rel="stylesheet" href="css/main.css">
-  <title>QRコード リーダー</title>
+  <title>QRコードの画像ファイルから内容を読み取る</title>
 </head>
 
 <body>
   <header>
-    <h1>QRコード リーダー</h1>
+    <h1>QRコードの画像ファイルから内容を読み取る</h1>
   </header>
 
   <div class="panel panel-success">
